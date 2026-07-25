@@ -1,0 +1,36 @@
+{
+  "name": "page-pulse",
+  "version": "1.0.0",
+  "description": "Production-grade URL audit service",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
+  },
+  "keywords": ["url", "audit", "health-check", "api"],
+  "author": "Badal",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^7.1.5",
+    "uuid": "^9.0.0",
+    "axios": "^1.6.2",
+    "cheerio": "^1.0.0-rc.12",
+    "winston": "^3.11.0",
+    "node-cache": "^5.1.2",
+    "joi": "^17.11.0",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "nodemon": "^3.0.2",
+    "eslint": "^8.56.0"
+  }
+}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Pulse - URL Audit Service</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; flex: 1; width: 100%; }
+    h1 { font-size: 2.5rem; text-align: center; margin-bottom: 8px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { text-align: center; color: #94a3b8; margin-bottom: 40px; }
+    .input-group { display: flex; gap: 12px; margin-bottom: 30px; }
+    input[type="text"] { flex: 1; padding: 14px 18px; border: 2px solid #334155; border-radius: 10px; background: #1e293b; color: #e2e8f0; font-size: 1rem; outline: none; transition: border-color 0.3s; }
+    input[type="text"]:focus { border-color: #3b82f6; }
+    input[type="text"]::placeholder { color: #64748b; }
+    button { padding: 14px 28px; border: none; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.3s; }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .result { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; display: none; margin-top: 20px; }
+    .result.show { display: block; }
+    .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .score { font-size: 2rem; font-weight: 700; }
+    .score.excellent { color: #22c55e; }
+    .score.good { color: #eab308; }
+    .score.poor { color: #ef4444; }
+    .section { margin-bottom: 16px; }
+    .section-title { font-size: 0.85rem; text-transform: uppercase; color: #64748b; margin-bottom: 8px; letter-spacing: 1px; }
+    .metric { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #334155; }
+    .metric:last-child { border-bottom: none; }
+    .metric-label { color: #94a3b8; }
+    .metric-value { font-weight: 600; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge.yes { background: #064e3b; color: #34d399; }
+    .badge.no { background: #7f1d1d; color: #fca5a5; }
+    .loading { text-align: center; padding: 40px; display: none; }
+    .loading.show { display: block; }
+    .spinner { border: 3px solid #334155; border-top: 3px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error { background: #7f1d1d; border: 1px solid #991b1b; border-radius: 10px; padding: 14px; margin-top: 20px; color: #fca5a5; display: none; }
+    .error.show { display: block; }
+    footer { text-align: center; padding: 20px; border-top: 1px solid #334155; color: #64748b; font-size: 0.9rem; }
+    footer a { color: #3b82f6; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Page Pulse</h1>
+    <p class="subtitle">Production-grade URL audit service</p>
+
+    <div class="input-group">
+      <input type="text" id="urlInput" placeholder="Enter URL to audit (e.g., https://example.com)">
+      <button id="auditBtn">Audit</button>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Analyzing URL...</p>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+      <div class="result-header">
+        <div>
+          <div class="section-title">Audit Score</div>
+          <div class="score" id="score">0</div>
+        </div>
+        <div style="text-align:right">
+          <div class="section-title">Status</div>
+          <div id="statusCode" class="metric-value">-</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">SEO</div>
+        <div class="metric"><span class="metric-label">Title</span><span class="badge" id="seoTitle">-</span></div>
+        <div class="metric"><span class="metric-label">Meta Description</span><span class="badge" id="seoMeta">-</span></div>
+        <div class="metric"><span class="metric-label">Canonical</span><span class="badge" id="seoCanonical">-</span></div>
+        <div class="metric"><span class="metric-label">Viewport</span><span class="badge" id="seoViewport">-</span></div>
+        <div class="metric"><span class="metric-label">Robots</span><span class="badge" id="seoRobots">-</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Performance</div>
+        <div class="metric"><span class="metric-label">Load Time</span><span class="metric-value" id="loadTime">-</span></div>
+        <div class="metric"><span class="metric-label">Content Type</span><span class="metric-value" id="contentType">-</span></div>
+        <div class="metric"><span class="metric-label">Gzip</span><span class="badge" id="gzip">-</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Content</div>
+        <div class="metric"><span class="metric-label">Headings (H1/H2/H3)</span><span class="metric-value" id="headings">-</span></div>
+        <div class="metric"><span class="metric-label">Images (total / with alt)</span><span class="metric-value" id="images">-</span></div>
+        <div class="metric"><span class="metric-label">Scripts</span><span class="metric-value" id="scripts">-</span></div>
+        <div class="metric"><span class="metric-label">Stylesheets</span><span class="metric-value" id="stylesheets">-</span></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built for <a href="https://digitalheroesco.com" target="_blank">Digital Heroes Training Task</a>
+  </footer>
+
+  <script>
+    document.getElementById('auditBtn').addEventListener('click', function() {
+      var url = document.getElementById('urlInput').value;
+      if (!url || !url.trim()) {
+        showError('Please enter a URL');
+        return;
+      }
+
+      var btn = document.getElementById('auditBtn');
+      var loading = document.getElementById('loading');
+      var result = document.getElementById('result');
+      var error = document.getElementById('error');
+
+      btn.disabled = true;
+      btn.textContent = 'Auditing...';
+      loading.className = 'loading show';
+      result.className = 'result';
+      error.className = 'error';
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/audit', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          btn.disabled = false;
+          btn.textContent = 'Audit';
+          loading.className = 'loading';
+
+          if (xhr.status === 200) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              if (data.error) {
+                showError(data.message || data.error);
+              } else {
+                showResult(data);
+              }
+            } catch (e) {
+              showError('Failed to parse response');
+            }
+          } else {
+            showError('Server error: ' + xhr.status);
+          }
+        }
+      };
+      xhr.onerror = function() {
+        btn.disabled = false;
+        btn.textContent = 'Audit';
+        loading.className = 'loading';
+        showError('Network error. Check if server is running.');
+      };
+      xhr.send(JSON.stringify({ url: url.trim() }));
+    });
+
+    document.getElementById('urlInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        document.getElementById('auditBtn').click();
+      }
+    });
+
+    function showError(msg) {
+      var el = document.getElementById('error');
+      el.textContent = msg;
+      el.className = 'error show';
+    }
+
+    function showResult(data) {
+      var a = data.analysis;
+      var scoreEl = document.getElementById('score');
+      scoreEl.textContent = data.score + '/100';
+      scoreEl.className = 'score ' + (data.score >= 80 ? 'excellent' : data.score >= 50 ? 'good' : 'poor');
+
+      document.getElementById('statusCode').textContent = a.statusCode;
+      document.getElementById('loadTime').textContent = a.loadTime + 'ms';
+      document.getElementById('contentType').textContent = a.performance.contentType;
+      document.getElementById('headings').textContent = a.metrics.headings.h1 + ' / ' + a.metrics.headings.h2 + ' / ' + a.metrics.headings.h3;
+      document.getElementById('images').textContent = a.metrics.images.total + ' / ' + a.metrics.images.withAlt;
+      document.getElementById('scripts').textContent = a.metrics.scripts;
+      document.getElementById('stylesheets').textContent = a.metrics.stylesheets;
+
+      setBadge('seoTitle', a.seo.hasTitle);
+      setBadge('seoMeta', a.seo.hasMetaDescription);
+      setBadge('seoCanonical', a.seo.hasCanonical);
+      setBadge('seoViewport', a.seo.hasViewport);
+      setBadge('seoRobots', a.seo.hasRobots);
+      setBadge('gzip', a.performance.hasGzip);
+
+      document.getElementById('result').className = 'result show';
+    }
+
+    function setBadge(id, val) {
+      var el = document.getElementById(id);
+      el.textContent = val ? 'Yes' : 'No';
+      el.className = 'badge ' + (val ? 'yes' : 'no');
+    }
+  </script>
+</body>
+</html>
