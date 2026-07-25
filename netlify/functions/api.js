@@ -10,7 +10,6 @@ const cheerio = require('cheerio');
 const serverless = require('serverless-http');
 
 const app = express();
-const router = express.Router();
 
 const cache = new NodeCache({ stdTTL: 3600, checkperiod: 120 });
 
@@ -23,16 +22,15 @@ const auditSchema = Joi.object({
   url: Joi.string().uri({ scheme: ['http', 'https'] }).required(),
   options: Joi.object({
     timeout: Joi.number().integer().min(1000).max(30000).default(5000),
-    followRedirects: Joi.boolean().default(true),
-    checkSSL: Joi.boolean().default(true)
+    followRedirects: Joi.boolean().default(true)
   }).default()
 });
 
-router.get('/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
-router.post('/api/audit', async (req, res) => {
+app.post('/api/audit', async (req, res) => {
   const requestId = uuidv4();
   try {
     const { error, value } = auditSchema.validate(req.body);
@@ -99,8 +97,5 @@ router.post('/api/audit', async (req, res) => {
     res.status(500).json({ error: 'Internal server error', message: err.message, requestId });
   }
 });
-
-app.use('/.netlify/functions/server', router);
-app.use('/', express.static('.'));
 
 module.exports.handler = serverless(app);
