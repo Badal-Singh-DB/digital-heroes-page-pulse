@@ -3,8 +3,8 @@
   functions = "netlify/functions"
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
+  from = "/api/audit"
+  to = "/.netlify/functions/api/audit"
   status = 200
   force = true
 

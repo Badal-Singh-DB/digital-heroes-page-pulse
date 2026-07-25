@@ -1,0 +1,16 @@
+{
+  "name": "page-pulse-api",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "cors": "^2.8.5",
+    "compression": "^1.7.4",
+    "uuid": "^9.0.0",
+    "axios": "^1.6.2",
+    "cheerio": "^1.0.0-rc.12",
+    "node-cache": "^5.1.2",
+    "joi": "^17.11.0",
+    "serverless-http": "^3.2.0"
+  }
+}
