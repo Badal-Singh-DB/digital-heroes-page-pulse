@@ -1,17 +1,15 @@
 [build]
+  publish = "."
   functions = "netlify/functions"
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/server/:splat"
+  from = "/api/audit"
+  to = "/.netlify/functions/server/api/audit"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/health"
   to = "/.netlify/functions/server/health"
   status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+  force = true
