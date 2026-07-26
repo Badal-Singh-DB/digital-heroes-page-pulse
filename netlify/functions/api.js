@@ -17,11 +17,11 @@ const auditSchema = Joi.object({
   url: Joi.string().uri({ scheme: ['http', 'https'] }).required()
 });
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'healthy' });
+app.get('/', (req, res) => {
+  res.json({ status: 'healthy', service: 'page-pulse' });
 });
 
-app.post('/audit', async (req, res) => {
+app.post('/', async (req, res) => {
   const requestId = uuidv4();
   try {
     const { error, value } = auditSchema.validate(req.body);
@@ -72,7 +72,7 @@ app.post('/audit', async (req, res) => {
     if (!analysis.seo.hasMetaDescription) score -= 10;
     if (!analysis.seo.hasCanonical) score -= 5;
     if (!analysis.seo.hasViewport) score -= 5;
-    if (analysis.images && analysis.metrics.images.total > analysis.metrics.images.withAlt) score -= 5;
+    if (analysis.metrics.images.total > analysis.metrics.images.withAlt) score -= 5;
     if (loadTime > 3000) score -= 15;
     else if (loadTime > 1000) score -= 5;
     score = Math.max(0, Math.min(100, score));
